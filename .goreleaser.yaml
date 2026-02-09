@@ -1,0 +1,50 @@
+version: 1
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: runeshell
+    main: ./cmd/runeshell
+    binary: runeshell
+    ldflags:
+      - -s -w
+      - -X main.version={{ .Version }}
+      - -X main.commit={{ .Commit }}
+      - -X main.date={{ .Date }}
+    goos:
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - id: runeshell
+    builds:
+      - runeshell
+    format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: "checksums.txt"
+
+brews:
+  - name: runeshell
+    homepage: "https://github.com/ayushsdev/runeshell"
+    description: "Tailnet-first remote terminal hub and agent"
+    license: "MIT"
+    tap:
+      owner: ayushsdev
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    commit_author:
+      name: Ayush Sharma
+      email: ayushsdev@users.noreply.github.com
+    folder: Formula
+    dependencies:
+      - tmux
+    install: |
+      bin.install "runeshell"
+    test: |
+      system "#{bin}/runeshell", "version"
